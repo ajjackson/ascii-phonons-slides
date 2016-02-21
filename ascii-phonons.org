@@ -39,9 +39,9 @@
 
    #+REVEAL: split
 
-   - Crystallographer-friendly Graphical User Interface (GUI)
+   - Crystallographer-friendly graphical user interface (GUI)
 
-   - Hacker-friendly Command-line interface (CLI) *[blend\under{}ascii.py]* and Python module *[ascii\under{}phonons]*
+   - Hacker-friendly command-line interface (CLI) *[blend\under{}ascii.py]* and Python module *[ascii\under{}phonons]*
 
    - Blender-artist-friendly Blender Python module *[vsim2blender]*
 
@@ -54,7 +54,7 @@
 ** v\under{}sim .ascii file
 
    - [[http://inac.cea.fr/L_Sim/V_Sim][v\under{}sim]] is a program for interactive visualisation of phonon modes
-   - It has a very nice feature set for exploring these
+   - Very nice feature set for exploring these
    - No output rendering options
    - Simple, well-defined file format
    - A bit buggy especially with USB monitor adapters, in virtual machines etc.
@@ -86,7 +86,7 @@
 
 ** Graphical user interface
 
-   - The GUI uses standard Python modules
+   - The *ascii-phonons* GUI uses standard Python modules
      - Tkinter "look" is platform-dependent and a bit dated
      - Preview window uses PIL
    - All core functionality is available, the GUI is not "dumbed down"
@@ -94,11 +94,46 @@
    #+CAPTION: ascii-phonons GUI
    [[./images/gui.png]]
 
+** Proposed workflow
+   - One-off images and prototypes using GUI
+   - For sophisticated graphics, use GUI to build model and launch Blender to work on materials, realistic lighting etc.
+   - For batches, use GUI to explore settings, then script CLI
+   - For in-house consistency or journal themes, use config files to customise colours
+
 * Details
 
 ** .ascii import
    - Lattice vectors
-   - q-points
+     - **v\under{}sim** uses six distances in a 2x3 array ([[http://inac.cea.fr/L_Sim/V_Sim/sample.html#sample_ascii][diagram]])
+
+     #+BEGIN_EXAMPLE
+     dxx dyx dyy
+     dzx dzy dzz
+     #+END_EXAMPLE
+
+     - These are converted to the usual 3x3 array by aligning $a$ with the $x$ axis and $b$ with the $x -- y$ plane
+
+     #+BEGIN_EXAMPLE
+     dxx 0.  0.
+     dxy dyy 0.
+     dzx dzy dzz
+     #+END_EXAMPLE
+
+   #+REVEAL: split
+     
+   - Eigenvectors and frequencies are given with corresponding q-points. 
+     This is expressed as commented metadata for backwards compatibility
+     - Eigenvectors are complex 3-tuples, divided into real and imaginary 3-tuples
+
+     #+BEGIN_EXAMPLE python
+#metaData: qpt=[0.000000;0.500000;0.000000;129.279993 \
+#; 0.028286; -0.008664; -0.031412; -0.000000; -0.000000; 0.000000 \
+#; 0.000010; -0.000003; -0.000011; 0.028285; -0.008664; -0.031409 \
+#; -0.000003; 0.000001; -0.000003; -0.028288; 0.008663; -0.031407 \
+#; -0.028289; 0.008663; -0.031408; 0.000007; -0.000002; 0.000008 \
+#+END_EXAMPLE
+
+     - The complex component leads to a phase difference between neigbouring unit cells
 
 ** Animated atom trajectories
    - Mathematics is adapted from Martin Dove's [[http://www.worldcat.org/search?q=isbn%3A0521398940][Introduction to Lattice Dynamics]] 
@@ -132,8 +167,77 @@
    - [[https://en.wikipedia.org/wiki/Atan2][atan2]] function is the key
      - Deals with correct intepretation of sign changes
 
+** Miller index view
+   
+   - This was a lot easier than expected!
+   - Ignore what you learned in undergrad and read [[http://www.worldcat.org/oclc/934604][Ashcroft/Mermin]]
+
+     #+BEGIN_QUOTE
+     The Miller indices of a lattice plane are the coordinates of the
+     shortest reciprocal lattice vector normal to that plane, with
+     respect to a specified set of primitive reciprocal lattice vectors
+     #+END_QUOTE
+
+   - Use the Miller index to make a vector orthogonal to the plane
+
+#+BEGIN_SRC python
+camera_direction_vector = sum([i * x for i, x in 
+                               zip(miller, reciprocal(lattice_vectors))],
+                              Vector((0,0,0)))
+#+END_SRC
+
+#+REVEAL: split
+
+    - I tried to use a bit of geometry to estimate the required distance and re-scale the vector
+
+    - In practice a fudge factor is still useful.
+
+    - Blender has tools to point the camera at an interesting object;
+      these are used to focus on the centre of the lattice.
+
 ** GUI development
-   - Pack vs Grid
+   Tkinter provides three layout options
+
+   - Grid
+     - Divide window into a grid and place elements in each
+     - Generally recommended, start with a pencil and paper!
+   - Pack
+     - Used for ascii-phonons
+     - Elements are "packed" into a side of the frame
+     - Nested frames are used for complex layouts
+     - Good for resizable windows
+     - A bit easier to hack around when prototyping
+   - Place
+     - Specify exact positions
+     - Avoid!
+
+   #+REVEAL: split
+
+   - Object-oriented programming is the way to go
+     - Parameters and settings need to be accessible by lots of functions
+     - Either assign to global variables or make attributes of parent object
+     #+ATTR_REVEAL: :frag fade-in
+     - Global variables are evil
+
+   #+ATTR_REVEAL: :frag (fade-in)
+   - Need to set up event loop
+   - Tkinter "widgets" work with special variable types
+
+   #+ATTR_REVEAL: :frag (fade-in)
+   #+BEGIN_src python
+   def add_appearance_row(self, padding=20):
+       ...
+       self.camera_rot = tk.DoubleVar(value=360)
+       ...        
+       Appearance = tk.Frame(self.LeftFrame, borderwidth=3, relief="groove")
+       tk.Label(Appearance, text="Appearance settings").pack(side="top", fill="x")
+
+       AppearanceRow1 = tk.Frame(Appearance)
+       tk.Entry(AppearanceRow1,
+                textvariable=self.camera_rot, width=4
+                ).pack(side="right")        
+       ...
+#+END_SRC
 
 * Documentation with Sphinx
 
@@ -194,7 +298,28 @@ https://ascii-phonons.readthedocs.org
 
    Use it!
 
-* Closing observations
+* Quick closing observations
+
+  - I have given up on YAML
+    - Cumbersome for human editing
+    - Slow for large complex data
+    - If your data isn't large and complex, why use YAML?
+    - *ascii-phonons* uses [[https://docs.python.org/3/library/configparser.html][configparser]] for .INI file-style configuration
 
   - Packaging is awkward
     - Automated tools exist, but they can't handle the weird double codebase of this project
+
+  - Project management with the issue tracker on Github is easy and seems like good practice
+
+** Want to know what's next?
+
+   Use the [[https://github.com/ajjackson/ascii-phonons/issues][issue tracker]] to keep track of development, report bugs and make feature requests
+
+** How did I make this presentation?
+   #+ATTR_REVEAL: :frag fade-in
+   [[https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Emacs-logo.svg/270px-Emacs-logo.svg.png]]
+
+   #+ATTR_REVEAL: :frag (fade-in)
+   - [[http://lab.hakim.se/reveal-js/][Reveal.js]]
+   - [[http://orgmode.org/][org-mode]] + [[https://github.com/yjwen/org-reveal][org-reveal]]
+   - [[https://pages.github.com/][Github pages]]
