@@ -190,10 +190,10 @@ camera_direction_vector = sum([i * x for i, x in
 
     - I tried to use a bit of geometry to estimate the required distance and re-scale the vector
 
-    - In practice a fudge factor is still useful.
+    - In practice a fudge factor is still useful
 
     - Blender has tools to point the camera at an interesting object;
-      these are used to focus on the centre of the lattice.
+      these are used to focus on the centre of the lattice
 
 ** GUI development
    Tkinter provides three layout options
