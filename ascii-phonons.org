@@ -1,0 +1,200 @@
+#+TITLE: Ascii-phonons
+#+AUTHOR: Adam J. Jackson
+#+EMAIL: a.j.jackson@bath.ac.uk
+
+#+OPTIONS: toc:nil texht:t :reveal_center
+#+REVEAL_ROOT: reveal.js
+#+REVEAL_EXTRA_CSS: presentation.css
+#+REVEAL_SPEED: fast
+#+REVEAL_TRANS: slide
+#+REVEAL_HLEVEL: 1
+
+** Info
+   Code site: https://github.com/ajjackson/ascii-phonons
+
+   These slides: https://io.github.com/ajjackson/ascii-phonons-slides
+
+* Introduction
+
+** What is ascii-phonons?
+
+   - A code to provide publication-quality visualisations of phonon modes
+   - Started life as a few scripts
+   - Aiming to make nice rendered images available to *ab initio*
+     lattice dynamics community
+
+** Key features
+
+   - Static images
+
+   #+CAPTION: Modes are represented by arrows
+   [[./images/kest6-arrows.png]]
+
+   #+REVEAL: split
+
+   - Off-gamma modes
+
+   #+CAPTION: Mode 13 in SnS at T-point (local minimum in dispersion plot)
+   [[./images/SnS-T-12.gif]]
+
+   #+REVEAL: split
+
+   - Crystallographer-friendly Graphical User Interface (GUI)
+
+   - Hacker-friendly Command-line interface (CLI) *[blend\under{}ascii.py]* and Python module *[ascii\under{}phonons]*
+
+   - Blender-artist-friendly Blender Python module *[vsim2blender]*
+
+* Components
+
+** Overview
+
+   [[./images/ascii-phonons-structure.svg]]
+
+** v\under{}sim .ascii file
+
+   - [[http://inac.cea.fr/L_Sim/V_Sim][v\under{}sim]] is a program for interactive visualisation of phonon modes
+   - It has a very nice feature set for exploring these
+   - No output rendering options
+   - Simple, well-defined file format
+   - A bit buggy especially with USB monitor adapters, in virtual machines etc.
+     - This is likely related to its extensive use of OpenGL. VESTA has similar issues.
+
+** Blender
+
+   - [[https://www.blender.org][Blender]] is the leading open-source package for 3D modelling and animation
+     - Codebase inherited from a commercial project, now run by a non-profit
+     - Regular [[http://archive.blender.org/features-gallery/blender-open-projects/index.html][open-source film projects]] help drive development forwards
+
+   #+CAPTION: Screenshot from the Sintel open film project
+   [[./images/sintel.png]]
+
+   #+REVEAL: split
+
+   - Blender has a scripting interface which uses a full-blown Python 3 engine, distributed with Blender
+   - The hooks are discoverable as tooltips within the desktop interface
+   
+   #+CAPTION: Blender tooltip (cursor is hidden from screenshot)
+   [[./images/tooltip.png]]
+
+** Python interface
+
+   - Building Blender as a module and calling it from your own programs is /hard/
+   - Instead, *ascii-phonons* generates throwaway script files with the user requirements and passes them to Blender
+   - The most "Blenderish" solution is to make a nice control panel within Blender
+   - But Blender has a steep learning curve, creating an unnecessary barrier to use
+
+** Graphical user interface
+
+   - The GUI uses standard Python modules
+     - Tkinter "look" is platform-dependent and a bit dated
+     - Preview window uses PIL
+   - All core functionality is available, the GUI is not "dumbed down"
+   
+   #+CAPTION: ascii-phonons GUI
+   [[./images/gui.png]]
+
+* Details
+
+** .ascii import
+   - Lattice vectors
+   - q-points
+
+** Animated atom trajectories
+   - Mathematics is adapted from Martin Dove's [[http://www.worldcat.org/search?q=isbn%3A0521398940][Introduction to Lattice Dynamics]] 
+   $$ \mathbf{r^\prime}(jl,t,\nu) = \\ \mathbf{r}(jl) + \mathbf{U}(j,\mathbf{q},\nu) \exp(i[\mathbf{q r}(jl) - \omega (\mathbf{k},\nu) t]) $$
+   - Need to track both atom index $j$ and cell within supercell $l$.
+   - Implementation very simple using complex datatypes:
+   
+   #+BEGIN_SRC python
+   for frame in range(start_frame, end_frame+1):
+       bpy.context.scene.frame_set(frame)
+       exponent = cmath.exp( complex(0,1) * 
+                      (r.dot(qpt) - 2 * math.pi*frame/n_frames))
+       atom.location = r + mass**-.5 * magnitude * 
+                           Vector([x.real for x in 
+                                   [x * exponent for x in displacement_vector]])
+       atom.keyframe_insert(data_path="location",index=-1)
+   #+END_SRC
+
+** Arrows
+   - Arrow model imported from a file
+
+     #+BEGIN_SRC python
+     bpy.ops.wm.link(directory=os.path.dirname(__file__) +
+            '/arrow_cylinder.blend/Object/', 
+            filepath="arrow_cylinder.blend",  filename="Arrow")
+     #+END_SRC
+     
+   - Blender prefers to specify rotation in Euler notation:
+     - rotation about $x$, followed by $y$, followed by $z$
+     - Getting this right is harder than it looks!
+   - [[https://en.wikipedia.org/wiki/Atan2][atan2]] function is the key
+     - Deals with correct intepretation of sign changes
+
+** GUI development
+   - Pack vs Grid
+
+* Documentation with Sphinx
+
+https://ascii-phonons.readthedocs.org
+
+** Sphinx --- the good
+
+   - Developed for Python language docs
+     - Can handle multiple human and computer languages
+   - Generates API documentation from Python docstrings
+   - Build the document structure you want
+   - Nice templates, customisation also possible
+   - Export to HTML, PDF, Epub
+   - Popular → Familiar → Easier to browse under stress
+   - https://readthedocs.org will host your documentation online for free
+     - Provide an attractive, consistent experience
+     - Relies on sponsorship; currently their hosting is donated by Rackspace
+
+** Sphinx --- the bad
+
+   - Languages other than Python are an afterthought
+     - C, C++, Javascript are built-in
+     - [[https://github.com/VACUMM/sphinx-fortran][Fortran]], [[https://github.com/JuliaLang/JuliaDoc][Julia]], [[https://pypi.python.org/pypi/sphinxcontrib-matlabdomain/][Matlab]] extensions developed by third-parties
+   - Not as automatic as one would hope
+     - In practice you need to create a page for each submodule manually
+   - Format for doc pages is Restructured Text (ReST)
+     - Can export to this from other formats using [[http://pandoc.org/][Pandoc]]
+     - A bridge for Markdown, [[https://recommonmark.readthedocs.org][recommonmark]], also exists
+       - [[http://blog.readthedocs.com/adding-markdown-support/][RTD supports it]]
+       - Not all features are available, e.g. TOCs
+
+** Sphinx --- the ugly
+
+   - API generation relies on docstrings written in ReST format
+
+   - As well as being unfamiliar, many people consider the readability to be poor
+
+   #+BEGIN_SRC python
+   def init_material(symbol, col=False, shadeless=True):
+       """
+       Create material if non-existent. Assign a random colour if none is specified.
+
+       :param col: RGB color. If False, use a random colour.
+       :type col: 3-tuple, list or Boolean False
+       :param shadeless: Enable set_shadeless material parameter. Informally known as "lights out".
+       :type shadeless: Boolean
+
+       :returns: bpy material object
+       """
+    #+END_SRC
+
+    - Workarounds
+      - Keep your beautiful sphinx docs open and use them instead of the docstrings
+      - Use the Google or Numpy style with [[http://www.sphinx-doc.org/en/stable/ext/napoleon.html#google-vs-numpy][Napoleon]]
+        - I haven't tried this yet. Could be finnicky?
+
+** Sphinx --- the verdict
+
+   Use it!
+
+* Closing observations
+
+  - Packaging is awkward
+    - Automated tools exist, but they can't handle the weird double codebase of this project
