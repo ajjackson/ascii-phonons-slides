@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Ascii-phonons</title>
+<meta name="author" content="(Adam J. Jackson)"/>
+<link rel="stylesheet" href="reveal.js/css/reveal.css"/>
+<link rel="stylesheet" href="reveal.js/css/theme/moon.css" id="theme"/>
+<link rel="stylesheet" href="presentation.css"/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1>Ascii-phonons</h1>
+<h2>Adam J. Jackson</h2>
+<h2><a href="mailto:a.j.jackson@bath.ac.uk">a.j.jackson@bath.ac.uk</a></h2>
+<h2></h2>
+</section>
+
+</section>
+<section id="slide-orgheadline1">
+<h3 id="orgheadline1"><span class="section-number-3">0.1</span> Info</h3>
+<p>
+Code site: <a href="https://github.com/ajjackson/ascii-phonons">https://github.com/ajjackson/ascii-phonons</a>
+</p>
+
+<p>
+These slides: <a href="http://ajjackson.github.io/ascii-phonons-slides">http://ajjackson.github.io/ascii-phonons-slides</a>
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline4">
+<h2 id="orgheadline4"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+</div></section>
+<section id="slide-orgheadline2">
+<h3 id="orgheadline2"><span class="section-number-3">1.1</span> What is ascii-phonons?</h3>
+<ul>
+<li>A code to provide publication-quality visualisations of phonon modes</li>
+<li>Started life as a few scripts</li>
+<li>Aiming to make nice rendered images available to <b>ab initio</b>
+     lattice dynamics community</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline3">
+<h3 id="orgheadline3"><span class="section-number-3">1.2</span> Key features</h3>
+<ul>
+<li>Static images</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="./images/kest6-arrows.png" alt="kest6-arrows.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> Modes are represented by arrows</p>
+</div>
+
+</section>
+<section>
+
+<ul>
+<li>Off-gamma modes</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="./images/SnS-T-12.gif" alt="SnS-T-12.gif" />
+</p>
+<p><span class="figure-number">Figure 2:</span> Mode 13 in SnS at T-point (local minimum in dispersion plot)</p>
+</div>
+
+</section>
+<section>
+
+<ul>
+<li>Crystallographer-friendly graphical user interface (GUI)</li>
+
+<li>Hacker-friendly command-line interface (CLI) <b>[blend_ascii.py]</b> and Python module <b>[ascii_phonons]</b></li>
+
+<li>Blender-artist-friendly Blender Python module <b>[vsim2blender]</b></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline11">
+<h2 id="orgheadline11"><span class="section-number-2">2</span> Components</h2>
+<div class="outline-text-2" id="text-2">
+</div></section>
+<section id="slide-orgheadline5">
+<h3 id="orgheadline5"><span class="section-number-3">2.1</span> Overview</h3>
+
+<div class="figure">
+<p><object type="image/svg+xml" data="./images/ascii-phonons-structure.svg" >
+Sorry, your browser does not support SVG.</object>
+</p>
+</div>
+
+</section>
+<section id="slide-orgheadline6">
+<h3 id="orgheadline6"><span class="section-number-3">2.2</span> v_sim .ascii file</h3>
+<ul>
+<li><a href="http://inac.cea.fr/L_Sim/V_Sim">v_sim</a> is a program for interactive visualisation of phonon modes</li>
+<li>Very nice feature set for exploring these</li>
+<li>No output rendering options</li>
+<li>Simple, well-defined file format</li>
+<li>A bit buggy especially with USB monitor adapters, in virtual machines etc.
+<ul>
+<li>This is likely related to its extensive use of OpenGL. VESTA has similar issues.</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline7">
+<h3 id="orgheadline7"><span class="section-number-3">2.3</span> Blender</h3>
+<ul>
+<li><a href="https://www.blender.org/">Blender</a> is the leading open-source package for 3D modelling and animation
+<ul>
+<li>Codebase inherited from a commercial project, now run by a non-profit</li>
+<li>Regular <a href="http://archive.blender.org/features-gallery/blender-open-projects/index.html">open-source film projects</a> help drive development forwards</li>
+
+</ul></li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="./images/sintel.png" alt="sintel.png" />
+</p>
+<p><span class="figure-number">Figure 4:</span> Screenshot from the Sintel open film project</p>
+</div>
+
+</section>
+<section>
+
+<ul>
+<li>Blender has a scripting interface which uses a full-blown Python 3 engine, distributed with Blender</li>
+<li>The hooks are discoverable as tooltips within the desktop interface</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="./images/tooltip.png" alt="tooltip.png" />
+</p>
+<p><span class="figure-number">Figure 5:</span> Blender tooltip (cursor is hidden from screenshot)</p>
+</div>
+
+</section>
+<section id="slide-orgheadline8">
+<h3 id="orgheadline8"><span class="section-number-3">2.4</span> Python interface</h3>
+<ul>
+<li>Building Blender as a module and calling it from your own programs is <i>hard</i></li>
+<li>Instead, <b>ascii-phonons</b> generates throwaway script files with the user requirements and passes them to Blender</li>
+<li>The most "Blenderish" solution is to make a nice control panel within Blender</li>
+<li>But Blender has a steep learning curve, creating an unnecessary barrier to use</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline9">
+<h3 id="orgheadline9"><span class="section-number-3">2.5</span> Graphical user interface</h3>
+<ul>
+<li>The <b>ascii-phonons</b> GUI uses standard Python modules
+<ul>
+<li>Tkinter "look" is platform-dependent and a bit dated</li>
+<li>Preview window uses PIL</li>
+
+</ul></li>
+<li>All core functionality is available, the GUI is not "dumbed down"</li>
+
+</ul>
+
+
+<div class="figure">
+<p><img src="./images/gui.png" alt="gui.png" />
+</p>
+<p><span class="figure-number">Figure 6:</span> ascii-phonons GUI</p>
+</div>
+
+</section>
+<section id="slide-orgheadline10">
+<h3 id="orgheadline10"><span class="section-number-3">2.6</span> Proposed workflow</h3>
+<ul>
+<li>One-off images and prototypes using GUI</li>
+<li>For sophisticated graphics, use GUI to build model and launch Blender to work on materials, realistic lighting etc.</li>
+<li>For batches, use GUI to explore settings, then script CLI</li>
+<li>For in-house consistency or journal themes, use config files to customise colours</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline17">
+<h2 id="orgheadline17"><span class="section-number-2">3</span> Details</h2>
+<div class="outline-text-2" id="text-3">
+</div></section>
+<section id="slide-orgheadline12">
+<h3 id="orgheadline12"><span class="section-number-3">3.1</span> .ascii import</h3>
+<ul>
+<li><p>
+Lattice vectors
+</p>
+<ul>
+<li><b><b>v_sim</b></b> uses six distances in a 2x3 array (<a href="http://inac.cea.fr/L_Sim/V_Sim/sample.html#sample_ascii">diagram</a>)</li>
+
+</ul>
+<pre class="example">
+dxx dyx dyy
+dzx dzy dzz
+</pre>
+
+<ul>
+<li>These are converted to the usual 3x3 array by aligning \(a\) with the \(x\) axis and \(b\) with the \(x -- y\) plane</li>
+
+</ul>
+<pre class="example">
+dxx 0.  0.
+dxy dyy 0.
+dzx dzy dzz
+</pre></li>
+
+</ul>
+
+</section>
+<section>
+
+<ul>
+<li><p>
+Eigenvectors and frequencies are given with corresponding q-points. 
+This is expressed as commented metadata for backwards compatibility
+</p>
+<ul>
+<li>Eigenvectors are complex 3-tuples, divided into real and imaginary 3-tuples</li>
+
+</ul>
+<pre class="example">
+#metaData: qpt=[0.000000;0.500000;0.000000;129.279993 \
+#; 0.028286; -0.008664; -0.031412; -0.000000; -0.000000; 0.000000 \
+#; 0.000010; -0.000003; -0.000011; 0.028285; -0.008664; -0.031409 \
+#; -0.000003; 0.000001; -0.000003; -0.028288; 0.008663; -0.031407 \
+#; -0.028289; 0.008663; -0.031408; 0.000007; -0.000002; 0.000008 \
+</pre>
+
+<ul>
+<li>The complex component leads to a phase difference between neigbouring unit cells</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline13">
+<h3 id="orgheadline13"><span class="section-number-3">3.2</span> Animated atom trajectories</h3>
+<ul>
+<li>Mathematics is adapted from Martin Dove's <a href="http://www.worldcat.org/search?q=isbn:0521398940">Introduction to Lattice Dynamics</a></li>
+
+</ul>
+<p>
+\[ \mathbf{r^\prime}(jl,t,\nu) = \\ \mathbf{r}(jl) + \mathbf{U}(j,\mathbf{q},\nu) \exp(i[\mathbf{q r}(jl) - \omega (\mathbf{k},\nu) t]) \]
+</p>
+<ul>
+<li>Need to track both atom index \(j\) and cell within supercell \(l\).</li>
+<li>Implementation very simple using complex datatypes:</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python">for frame in range(start_frame, end_frame+1):
+    bpy.context.scene.frame_set(frame)
+    exponent = cmath.exp( complex(0,1) * 
+                   (r.dot(qpt) - 2 * math.pi*frame/n_frames))
+    atom.location = r + mass**-.5 * magnitude * 
+                        Vector([x.real for x in 
+                                [x * exponent for x in displacement_vector]])
+    atom.keyframe_insert(data_path="location",index=-1)
+</pre>
+</div>
+
+</section>
+<section id="slide-orgheadline14">
+<h3 id="orgheadline14"><span class="section-number-3">3.3</span> Arrows</h3>
+<ul>
+<li><p>
+Arrow model imported from a file
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python">bpy.ops.wm.link(directory=os.path.dirname(__file__) +
+       '/arrow_cylinder.blend/Object/', 
+       filepath="arrow_cylinder.blend",  filename="Arrow")
+</pre>
+</div></li>
+
+<li>Blender prefers to specify rotation in Euler notation:
+<ul>
+<li>rotation about \(x\), followed by \(y\), followed by \(z\)</li>
+<li>Getting this right is harder than it looks!</li>
+
+</ul></li>
+<li><a href="https://en.wikipedia.org/wiki/Atan2">atan2</a> function is the key
+<ul>
+<li>Deals with correct intepretation of sign changes</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline15">
+<h3 id="orgheadline15"><span class="section-number-3">3.4</span> Miller index view</h3>
+<ul>
+<li>This was a lot easier than expected!</li>
+<li><p>
+Ignore what you learned in undergrad and read <a href="http://www.worldcat.org/oclc/934604">Ashcroft/Mermin</a>
+</p>
+
+<blockquote nil>
+<p>
+The Miller indices of a lattice plane are the coordinates of the
+shortest reciprocal lattice vector normal to that plane, with
+respect to a specified set of primitive reciprocal lattice vectors
+</p>
+</blockquote></li>
+
+<li>Use the Miller index to make a vector orthogonal to the plane</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python">camera_direction_vector = sum([i * x for i, x in 
+                               zip(miller, reciprocal(lattice_vectors))],
+                              Vector((0,0,0)))
+</pre>
+</div>
+
+</section>
+<section>
+
+<ul>
+<li>I tried to use a bit of geometry to estimate the required distance and re-scale the vector</li>
+
+<li>In practice a fudge factor is still useful.</li>
+
+<li>Blender has tools to point the camera at an interesting object;
+these are used to focus on the centre of the lattice.</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline16">
+<h3 id="orgheadline16"><span class="section-number-3">3.5</span> GUI development</h3>
+<p>
+Tkinter provides three layout options
+</p>
+
+<ul>
+<li>Grid
+<ul>
+<li>Divide window into a grid and place elements in each</li>
+<li>Generally recommended, start with a pencil and paper!</li>
+
+</ul></li>
+<li>Pack
+<ul>
+<li>Used for ascii-phonons</li>
+<li>Elements are "packed" into a side of the frame</li>
+<li>Nested frames are used for complex layouts</li>
+<li>Good for resizable windows</li>
+<li>A bit easier to hack around when prototyping</li>
+
+</ul></li>
+<li>Place
+<ul>
+<li>Specify exact positions</li>
+<li>Avoid!</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section>
+
+<ul>
+<li><p>
+Object-oriented programming is the way to go
+</p>
+<ul>
+<li>Parameters and settings need to be accessible by lots of functions</li>
+<li>Either assign to global variables or make attributes of parent object</li>
+
+</ul>
+<ul class="fragment fade-in">
+<li>Global variables are evil</li>
+
+</ul></li>
+
+</ul>
+
+<ul>
+<li class="fragment fade-in">Need to set up event loop</li>
+<li class="fragment fade-in">Tkinter "widgets" work with special variable types</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="fragment (fade-in)">def add_appearance_row(self, padding=20):
+    ...
+    self.camera_rot = tk.DoubleVar(value=360)
+    ...        
+    Appearance = tk.Frame(self.LeftFrame, borderwidth=3, relief="groove")
+    tk.Label(Appearance, text="Appearance settings").pack(side="top", fill="x")
+
+    AppearanceRow1 = tk.Frame(Appearance)
+    tk.Entry(AppearanceRow1,
+             textvariable=self.camera_rot, width=4
+             ).pack(side="right")        
+    ...
+</pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline22">
+<h2 id="orgheadline22"><span class="section-number-2">4</span> Documentation with Sphinx</h2>
+<p>
+<a href="https://ascii-phonons.readthedocs.org/">https://ascii-phonons.readthedocs.org/</a>
+</p>
+
+</section>
+<section id="slide-orgheadline18">
+<h3 id="orgheadline18"><span class="section-number-3">4.1</span> Sphinx &#x2014; the good</h3>
+<ul>
+<li>Developed for Python language docs
+<ul>
+<li>Can handle multiple human and computer languages</li>
+
+</ul></li>
+<li>Generates API documentation from Python docstrings</li>
+<li>Build the document structure you want</li>
+<li>Nice templates, customisation also possible</li>
+<li>Export to HTML, PDF, Epub</li>
+<li>Popular → Familiar → Easier to browse under stress</li>
+<li><a href="https://readthedocs.org/">https://readthedocs.org/</a> will host your documentation online for free
+<ul>
+<li>Provide an attractive, consistent experience</li>
+<li>Relies on sponsorship; currently their hosting is donated by Rackspace</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline19">
+<h3 id="orgheadline19"><span class="section-number-3">4.2</span> Sphinx &#x2014; the bad</h3>
+<ul>
+<li>Languages other than Python are an afterthought
+<ul>
+<li>C, C++, Javascript are built-in</li>
+<li><a href="https://github.com/VACUMM/sphinx-fortran">Fortran</a>, <a href="https://github.com/JuliaLang/JuliaDoc">Julia</a>, <a href="https://pypi.python.org/pypi/sphinxcontrib-matlabdomain/">Matlab</a> extensions developed by third-parties</li>
+
+</ul></li>
+<li>Not as automatic as one would hope
+<ul>
+<li>In practice you need to create a page for each submodule manually</li>
+
+</ul></li>
+<li>Format for doc pages is Restructured Text (ReST)
+<ul>
+<li>Can export to this from other formats using <a href="http://pandoc.org/">Pandoc</a></li>
+<li>A bridge for Markdown, <a href="https://recommonmark.readthedocs.org/">recommonmark</a>, also exists
+<ul>
+<li><a href="http://blog.readthedocs.com/adding-markdown-support/">RTD supports it</a></li>
+<li>Not all features are available, e.g. TOCs</li>
+
+</ul></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline20">
+<h3 id="orgheadline20"><span class="section-number-3">4.3</span> Sphinx &#x2014; the ugly</h3>
+<ul>
+<li>API generation relies on docstrings written in ReST format</li>
+
+<li>As well as being unfamiliar, many people consider the readability to be poor</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python">def init_material(symbol, col=False, shadeless=True):
+    """
+    Create material if non-existent. Assign a random colour if none is specified.
+
+    :param col: RGB color. If False, use a random colour.
+    :type col: 3-tuple, list or Boolean False
+    :param shadeless: Enable set_shadeless material parameter. Informally known as "lights out".
+    :type shadeless: Boolean
+
+    :returns: bpy material object
+    """
+</pre>
+</div>
+
+<ul>
+<li>Workarounds
+<ul>
+<li>Keep your beautiful sphinx docs open and use them instead of the docstrings</li>
+<li>Use the Google or Numpy style with <a href="http://www.sphinx-doc.org/en/stable/ext/napoleon.html#google-vs-numpy">Napoleon</a>
+<ul>
+<li>I haven't tried this yet. Could be finnicky?</li>
+
+</ul></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline21">
+<h3 id="orgheadline21"><span class="section-number-3">4.4</span> Sphinx &#x2014; the verdict</h3>
+<p>
+Use it!
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline25">
+<h2 id="orgheadline25"><span class="section-number-2">5</span> Quick closing observations</h2>
+<ul>
+<li>I have given up on YAML
+<ul>
+<li>Cumbersome for human editing</li>
+<li>Slow for large complex data</li>
+<li>If your data isn't large and complex, why use YAML?</li>
+<li><b>ascii-phonons</b> uses <a href="https://docs.python.org/3/library/configparser.html">configparser</a> for .INI file-style configuration</li>
+
+</ul></li>
+
+<li>Packaging is awkward
+<ul>
+<li>Automated tools exist, but they can't handle the weird double codebase of this project</li>
+
+</ul></li>
+
+<li>Project management with the issue tracker on Github is easy and seems like good practice</li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline23">
+<h3 id="orgheadline23"><span class="section-number-3">5.1</span> Want to know what's next?</h3>
+<p>
+Use the <a href="https://github.com/ajjackson/ascii-phonons/issues">issue tracker</a> to keep track of development, report bugs and make feature requests
+</p>
+
+</section>
+<section id="slide-orgheadline24">
+<h3 id="orgheadline24"><span class="section-number-3">5.2</span> How did I make this presentation?</h3>
+
+<div class="figure">
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Emacs-logo.svg/270px-Emacs-logo.svg.png" alt="270px-Emacs-logo.svg.png" class="fragment fade-in" />
+</p>
+</div>
+
+<ul>
+<li class="fragment fade-in"><a href="http://lab.hakim.se/reveal-js/">Reveal.js</a></li>
+<li class="fragment fade-in"><a href="http://orgmode.org/">org-mode</a> + <a href="https://github.com/yjwen/org-reveal">org-reveal</a></li>
+<li class="fragment fade-in"><a href="https://pages.github.com/">Github pages</a></li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: true,
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'slide', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'fast',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

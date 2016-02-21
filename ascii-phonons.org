@@ -12,7 +12,7 @@
 ** Info
    Code site: https://github.com/ajjackson/ascii-phonons
 
-   These slides: https://io.github.com/ajjackson/ascii-phonons-slides
+   These slides: http://ajjackson.github.io/ascii-phonons-slides
 
 * Introduction
 
